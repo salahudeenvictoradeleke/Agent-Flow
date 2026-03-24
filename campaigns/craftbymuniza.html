@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>AgentFlow - Campaign Dashboard</title>
+    <style>
+        :root {
+            --bg-color: #f5f6f8;
+            --card-bg: #ffffff;
+            --text-color: #1a1a1a;
+            --muted-text: #666;
+            --border-color: #d9dde3;
+            --accent-color: #111;
+            --highlight-color: #fff3bf;
+            --shadow: 0 4px 14px rgba(0, 0, 0, 0.06);
+            --radius: 14px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.5;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .app-container {
+            width: 100%;
+            max-width: 820px;
+            margin: 0 auto;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            overflow: hidden;
+        }
+
+        header {
+            padding: 20px 24px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            background: #fff;
+        }
+
+        .logo-icon {
+            width: 36px;
+            height: 36px;
+            stroke: #111;
+            stroke-width: 2;
+            fill: none;
+            flex-shrink: 0;
+        }
+
+        h1 {
+            font-size: 1.7rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+        }
+
+        main {
+            padding: 24px;
+        }
+
+        .campaign-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            font-size: 1.35rem;
+            font-weight: 600;
+            margin-bottom: 22px;
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 5px 10px;
+            border-radius: 999px;
+            border: 1px solid #b7e4c7;
+            background: #eaf8ee;
+            color: #1f7a3d;
+            font-size: 0.78rem;
+            font-weight: 700;
+            line-height: 1;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #22c55e;
+            position: relative;
+            flex-shrink: 0;
+        }
+
+        .status-dot::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            border-radius: 50%;
+            background: #22c55e;
+            opacity: 0.45;
+            animation: statusPulse 1.8s infinite;
+        }
+
+        @keyframes statusPulse {
+            0% {
+                transform: scale(1);
+                opacity: 0.45;
+            }
+            70% {
+                transform: scale(2.2);
+                opacity: 0;
+            }
+            100% {
+                transform: scale(2.2);
+                opacity: 0;
+            }
+        }
+
+        .data-card,
+        .activity-card {
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 22px;
+            background: #fff;
+        }
+
+        .activity-card {
+            margin-top: 18px;
+        }
+
+        .section-title {
+            font-size: 1rem;
+            font-weight: 700;
+            margin-bottom: 14px;
+            color: #222;
+        }
+
+        .data-row {
+            display: flex;
+            gap: 16px;
+            align-items: flex-start;
+            margin-bottom: 20px;
+        }
+
+        .data-row:last-child {
+            margin-bottom: 0;
+        }
+
+        .label {
+            min-width: 150px;
+            font-weight: 600;
+            color: #222;
+        }
+
+        .value,
+        .metric-value {
+            flex: 1;
+            word-break: break-word;
+            color: #111;
+            border-bottom: 1px dashed #d7dbe0;
+            padding-bottom: 6px;
+        }
+
+        .value {
+            font-weight: 400;
+        }
+
+        .metric-value {
+            font-weight: 600;
+            transition: background-color 0.3s ease, transform 0.25s ease;
+            display: inline-block;
+        }
+
+        .metric-value.updated {
+            background-color: var(--highlight-color);
+            transform: scale(1.03);
+            border-radius: 6px;
+            padding-left: 4px;
+            padding-right: 4px;
+        }
+
+        .activity-feed {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            max-height: 260px;
+            overflow-y: auto;
+        }
+
+        .activity-item {
+            display: flex;
+            justify-content: space-between;
+            gap: 14px;
+            padding: 10px 12px;
+            border: 1px solid #eceff3;
+            border-radius: 10px;
+            background: #fafbfc;
+        }
+
+        .activity-text {
+            color: #222;
+            font-size: 0.96rem;
+        }
+
+        .activity-time {
+            color: var(--muted-text);
+            font-size: 0.85rem;
+            white-space: nowrap;
+        }
+
+        .activity-empty {
+            color: var(--muted-text);
+            font-size: 0.95rem;
+        }
+
+        @media (max-width: 640px) {
+            body {
+                padding: 12px;
+            }
+
+            header {
+                padding: 18px;
+            }
+
+            main {
+                padding: 18px;
+            }
+
+            h1 {
+                font-size: 1.45rem;
+            }
+
+            .campaign-header {
+                font-size: 1.15rem;
+            }
+
+            .data-card,
+            .activity-card {
+                padding: 18px;
+            }
+
+            .data-row {
+                flex-direction: column;
+                gap: 8px;
+                margin-bottom: 18px;
+            }
+
+            .label {
+                min-width: auto;
+            }
+
+            .activity-item {
+                flex-direction: column;
+                gap: 6px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <header>
+            <svg class="logo-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <rect x="3" y="3" width="8" height="8" rx="1"></rect>
+                <rect x="13" y="13" width="8" height="8" rx="1"></rect>
+                <path d="M11 7h2a2 2 0 0 1 2 2v2"></path>
+                <path d="M13 17h-2a2 2 0 0 1-2-2v-2"></path>
+                <circle cx="7" cy="17" r="1" fill="currentColor" stroke="none"></circle>
+                <circle cx="17" cy="7" r="1" fill="currentColor" stroke="none"></circle>
+            </svg>
+            <h1>Agent-Flow API v2.4</h1>
+        </header>
+
+        <main>
+            <div class="campaign-header">
+                <span>Campaign: #54397762</span>
+                <span class="status-badge">
+                    <span class="status-dot"></span>
+                    Active
+                </span>
+            </div>
+
+            <div class="data-card">
+                <div class="data-row">
+                    <div class="label">Destination URL:</div>
+                   <div class="value">
+    <a href="https://etsy.com/shop/craftbymuniza" target="_blank" rel="noopener noreferrer" class="link-out">
+        https://etsy.com/shop/craftbymuniza
+    </a>
+</div>
+                </div>
+
+                <div class="data-row">
+                    <div class="label">Target Impressions:</div>
+                    <div id="target" class="value">--</div>
+                </div>
+
+                <div class="data-row">
+                    <div class="label">Impressions:</div>
+                    <div id="impressions" class="metric-value">--</div>
+                </div>
+
+                <div class="data-row">
+                    <div class="label">CTR:</div>
+                    <div id="ctr" class="metric-value">--</div>
+                </div>
+
+                <div class="data-row">
+                    <div class="label">Clicks:</div>
+                    <div id="clicks" class="metric-value">--</div>
+                </div>
+
+                <div class="data-row">
+                    <div class="label">Conversions:</div>
+                    <div id="conversions" class="metric-value">--</div>
+                </div>
+
+                <div class="data-row">
+                    <div class="label">Start Date:</div>
+                    <div class="value">March 09, 2026</div>
+                </div>
+
+                <div class="data-row">
+                    <div class="label">End Date:</div>
+                    <div class="value">April 07, 2026</div>
+                </div>
+
+                <div class="data-row">
+                    <div class="label">Geo-targeted:</div>
+                    <div class="value">Pakistan, India, Bangladesh, Afghanistan</div>
+                </div>
+            </div>
+            <div class="activity-card">
+    <div class="section-title">Live Activity</div>
+    <div id="trafficSourceFeed" class="activity-feed">
+        <div class="activity-empty">Waiting for traffic source activity...</div>
+    </div>
+</div>
+        </main>
+    </div>
+    
+        <script>
+    const STORAGE_KEY = "agentflow_metrics_v6";
+
+    const campaignStart = new Date("2026-03-09T00:00:00");
+    const campaignEnd = new Date("2026-04-07T23:59:59");
+    const campaignTarget = 100000;
+
+    const clickThroughRate = 0.135; // 13.5%
+    const conversionRate = 0.065;
+
+    const locations = [
+        "Pakistan",
+        "India",
+        "Bangladesh",
+        "Afghanistan"
+    ];
+
+    const impressionMessages = [
+        "New impression delivered in",
+        "Campaign displayed in",
+        "Ad served to audience in",
+        "Visibility event recorded in"
+    ];
+
+    const clickMessages = [
+        "New click recorded from",
+        "Visitor clicked through from",
+        "Traffic event captured from",
+        "Engaged visitor arrived from"
+    ];
+
+    const conversionMessages = [
+        "Conversion recorded from",
+        "Lead captured from",
+        "New buyer event from",
+        "Conversion event tracked in"
+    ];
+
+    function parseNumber(value) {
+        const cleaned = String(value).replace(/,/g, "").replace("%", "").trim();
+        const parsed = parseFloat(cleaned);
+        return Number.isNaN(parsed) ? 0 : parsed;
+    }
+
+    function formatNumber(value) {
+        return Number(value).toLocaleString();
+    }
+
+    function formatPercent(value) {
+        return `${(value * 100).toFixed(1)}%`;
+    }
+
+    function saveMetrics(metrics) {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(metrics));
+    }
+
+    function loadMetrics() {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        return saved ? JSON.parse(saved) : null;
+    }
+
+    function clamp(value, min, max) {
+        return Math.min(Math.max(value, min), max);
+    }
+
+    function getNow() {
+        return new Date();
+    }
+
+    function getElapsedRatio() {
+        const now = getNow().getTime();
+        const start = campaignStart.getTime();
+        const end = campaignEnd.getTime();
+
+        if (now <= start) return 0;
+        if (now >= end) return 1;
+
+        return (now - start) / (end - start);
+    }
+
+    function getExpectedImpressions() {
+        return Math.floor(campaignTarget * getElapsedRatio());
+    }
+
+    function getExpectedClicks(impressions) {
+        return Math.floor(impressions * clickThroughRate);
+    }
+
+    function getExpectedConversions(clicks) {
+        return Math.floor(clicks * conversionRate);
+    }
+
+    function getCurrentMetrics() {
+        return {
+            impressions: parseNumber(document.getElementById("impressions").textContent),
+            clicks: parseNumber(document.getElementById("clicks").textContent),
+            conversions: parseNumber(document.getElementById("conversions").textContent)
+        };
+    }
+
+    function pulseUpdate(element) {
+        if (!element) return;
+        element.classList.add("updated");
+        setTimeout(function () {
+            element.classList.remove("updated");
+        }, 450);
+    }
+
+    function getRandomItem(list) {
+        return list[Math.floor(Math.random() * list.length)];
+    }
+
+    function getCurrentTime() {
+        return getNow().toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit",
+            second: "2-digit"
+        });
+    }
+
+    function addActivity(message) {
+        const feed = document.getElementById("trafficSourceFeed");
+        if (!feed) return;
+
+        const emptyState = feed.querySelector(".activity-empty");
+        if (emptyState) {
+            emptyState.remove();
+        }
+
+        const item = document.createElement("div");
+        item.className = "activity-item";
+
+        const text = document.createElement("div");
+        text.className = "activity-text";
+        text.textContent = message;
+
+        const time = document.createElement("div");
+        time.className = "activity-time";
+        time.textContent = getCurrentTime();
+
+        item.appendChild(text);
+        item.appendChild(time);
+
+        feed.prepend(item);
+
+        while (feed.children.length > 8) {
+            feed.removeChild(feed.lastChild);
+        }
+    }
+
+    function renderMetrics(impressions, clicks, conversions) {
+        const impressionsEl = document.getElementById("impressions");
+        const clicksEl = document.getElementById("clicks");
+        const conversionsEl = document.getElementById("conversions");
+        const ctrEl = document.getElementById("ctr");
+        const targetEl = document.getElementById("target");
+
+        targetEl.textContent = formatNumber(campaignTarget);
+        impressionsEl.textContent = formatNumber(impressions);
+        clicksEl.textContent = formatNumber(clicks);
+        conversionsEl.textContent = formatNumber(conversions);
+
+        const liveCtr = impressions > 0 ? clicks / impressions : clickThroughRate;
+        ctrEl.textContent = formatPercent(liveCtr);
+    }
+
+    function initializeMetrics() {
+        const savedMetrics = loadMetrics();
+
+        if (
+            savedMetrics &&
+            typeof savedMetrics.impressions === "number" &&
+            typeof savedMetrics.clicks === "number" &&
+            typeof savedMetrics.conversions === "number"
+        ) {
+            const impressions = clamp(savedMetrics.impressions, 0, campaignTarget);
+            const clicks = Math.max(0, savedMetrics.clicks);
+            const conversions = Math.max(0, savedMetrics.conversions);
+
+            renderMetrics(impressions, clicks, conversions);
+            return;
+        }
+
+        const initialImpressions = clamp(getExpectedImpressions(), 0, campaignTarget);
+        const initialClicks = getExpectedClicks(initialImpressions);
+        const initialConversions = getExpectedConversions(initialClicks);
+
+        renderMetrics(initialImpressions, initialClicks, initialConversions);
+
+        saveMetrics({
+            impressions: initialImpressions,
+            clicks: initialClicks,
+            conversions: initialConversions
+        });
+    }
+
+    function updateMetrics() {
+        const current = getCurrentMetrics();
+        const impressionsEl = document.getElementById("impressions");
+        const clicksEl = document.getElementById("clicks");
+        const conversionsEl = document.getElementById("conversions");
+        const ctrEl = document.getElementById("ctr");
+
+        const expectedImpressions = getExpectedImpressions();
+        const variance = Math.floor(Math.random() * 51) - 25;
+        const adjustedImpressions = clamp(expectedImpressions + variance, 0, campaignTarget);
+
+        let newImpressions = current.impressions;
+
+        if (current.impressions < adjustedImpressions) {
+            const gap = adjustedImpressions - current.impressions;
+            const step = Math.max(1, Math.min(gap, Math.ceil(gap * 0.15)));
+            newImpressions = current.impressions + step;
+        } else if (current.impressions > adjustedImpressions + 100) {
+            newImpressions = adjustedImpressions;
+        }
+
+        newImpressions = Math.min(newImpressions, campaignTarget);
+
+        const expectedClicks = getExpectedClicks(newImpressions);
+        let newClicks = current.clicks;
+
+        if (current.clicks < expectedClicks) {
+            const gap = expectedClicks - current.clicks;
+            const step = Math.max(1, Math.min(gap, Math.ceil(gap * 0.18)));
+            newClicks = current.clicks + step;
+        } else if (current.clicks > expectedClicks + 20) {
+            newClicks = expectedClicks;
+        }
+
+        const expectedConversions = getExpectedConversions(newClicks);
+        let newConversions = current.conversions;
+
+        if (current.conversions < expectedConversions) {
+            const gap = expectedConversions - current.conversions;
+            const step = Math.max(1, Math.min(gap, Math.ceil(gap * 0.2)));
+            newConversions = current.conversions + step;
+        } else if (current.conversions > expectedConversions + 5) {
+            newConversions = expectedConversions;
+        }
+
+        if (newImpressions !== current.impressions) {
+            impressionsEl.textContent = formatNumber(newImpressions);
+            pulseUpdate(impressionsEl);
+
+            if (Math.random() > 0.25) {
+                addActivity(`${getRandomItem(impressionMessages)} ${getRandomItem(locations)}`);
+            }
+        }
+
+        if (newClicks !== current.clicks) {
+            clicksEl.textContent = formatNumber(newClicks);
+            pulseUpdate(clicksEl);
+
+            if (Math.random() > 0.4) {
+                addActivity(`${getRandomItem(clickMessages)} ${getRandomItem(locations)}`);
+            }
+        }
+
+        if (newConversions !== current.conversions) {
+            conversionsEl.textContent = formatNumber(newConversions);
+            pulseUpdate(conversionsEl);
+
+            if (Math.random() > 0.55) {
+                addActivity(`${getRandomItem(conversionMessages)} ${getRandomItem(locations)}`);
+            }
+        }
+
+        const liveCtr = newImpressions > 0 ? newClicks / newImpressions : clickThroughRate;
+        ctrEl.textContent = formatPercent(liveCtr);
+
+        if (
+            newImpressions !== current.impressions ||
+            newClicks !== current.clicks ||
+            newConversions !== current.conversions
+        ) {
+            pulseUpdate(ctrEl);
+
+            saveMetrics({
+                impressions: newImpressions,
+                clicks: newClicks,
+                conversions: newConversions
+            });
+        }
+    }
+
+    initializeMetrics();
+    setInterval(updateMetrics, 5000);
+</script>
+         
+  
+</body>
+</html>
