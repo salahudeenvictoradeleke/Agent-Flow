@@ -349,94 +349,93 @@
         </div>
       </div>
 
-      <section class="grid">
-        <div class="card">
-          <div class="section-title">Campaign Overview</div>
+  <section class="grid">
+  <div class="card">
+    <div class="section-title">Campaign Overview</div>
 
-          <div class="mini-stats">
-            <div class="mini-stat">
-              <div class="mini-stat-label">Target Impressions</div>
-              <div id="target" class="mini-stat-value">--</div>
-            </div>
-            <div class="mini-stat">
-              <div class="mini-stat-label">Remaining Impressions</div>
-              <div id="remainingStat" class="mini-stat-value">0</div>
-            </div>
-            <div class="mini-stat">
-              <div class="mini-stat-label">Progress</div>
-              <div id="progressStat" class="mini-stat-value">0%</div>
-            </div>
-            <div class="mini-stat">
-              <div class="mini-stat-label">Campaign Window</div>
-              <div id="windowStat" class="mini-stat-value">--</div>
-            </div>
-          </div>
+    <div class="mini-stats">
+      <div class="mini-stat">
+        <div class="mini-stat-label">Target Impressions</div>
+        <div id="target" class="mini-stat-value">--</div>
+      </div>
+      <div class="mini-stat">
+        <div class="mini-stat-label">Remaining Impressions</div>
+        <div id="remainingStat" class="mini-stat-value">0</div>
+      </div>
+      <div class="mini-stat">
+        <div class="mini-stat-label">Progress</div>
+        <div id="progressStat" class="mini-stat-value">0%</div>
+      </div>
+      <div class="mini-stat">
+        <div class="mini-stat-label">Campaign Window</div>
+        <div id="windowStat" class="mini-stat-value">--</div>
+      </div>
+    </div>
 
-          <div class="data-row">
-            <div class="label">Destination URL:</div>
-            <div class="value">
-              <a
-                id="destinationLink"
-                href="https://etsy.com/shop/craftbymuniza"
-                target="_blank"
-                rel="noopener noreferrer"
-                class="link-out"
-              >
-                https://etsy.com/shop/craftbymuniza
-              </a>
-            </div>
-          </div>
+    <div class="data-row">
+      <div class="label">Start Date:</div>
+      <div id="startDate" class="value">--</div>
+    </div>
 
-          <div class="data-row">
-            <div class="label">Impressions:</div>
-            <div id="impressions" class="metric-value">--</div>
-          </div>
+    <div class="data-row">
+      <div class="label">End Date:</div>
+      <div id="endDate" class="value">--</div>
+    </div>
 
-          <div class="data-row">
-            <div class="label">CTR:</div>
-            <div id="ctr" class="metric-value">--</div>
-          </div>
+    <div class="data-row">
+      <div class="label">Delivered Impressions:</div>
+      <div id="impressions" class="metric-value">--</div>
+    </div>
 
-          <div class="data-row">
-            <div class="label">Clicks:</div>
-            <div id="clicks" class="metric-value">--</div>
-          </div>
+    <div class="data-row">
+      <div class="label">Destination URL:</div>
+      <div class="value">
+        <a
+          id="destinationLink"
+          href="https://etsy.com/shop/craftbymuniza"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="link-out"
+        >
+          https://etsy.com/shop/craftbymuniza
+        </a>
+      </div>
+    </div>
 
-          <div class="data-row">
-            <div class="label">Conversions:</div>
-            <div id="conversions" class="metric-value">--</div>
-          </div>
+    <div class="data-row">
+      <div class="label">Clicks:</div>
+      <div id="clicks" class="metric-value">--</div>
+    </div>
 
-          <div class="data-row">
-            <div class="label">Start Date:</div>
-            <div id="startDate" class="value">--</div>
-          </div>
+    <div class="data-row">
+      <div class="label">CTR:</div>
+      <div id="ctr" class="metric-value">--</div>
+    </div>
 
-          <div class="data-row">
-            <div class="label">End Date:</div>
-            <div id="endDate" class="value">--</div>
-          </div>
+    <div class="data-row">
+      <div class="label">Conversions:</div>
+      <div id="conversions" class="metric-value">--</div>
+    </div>
 
-          <div class="data-row">
-            <div class="label">Geo-targeted:</div>
-            <div id="geoTargets" class="value">--</div>
-          </div>
-        </div>
+    <div class="data-row">
+      <div class="label">Geo-targeted:</div>
+      <div id="geoTargets" class="value">--</div>
+    </div>
+  </div>
 
-        <div class="card">
-          <div class="section-title">Live Activity</div>
-          <div id="activityFeed" class="activity-feed" aria-live="polite">
-            <div class="activity-empty">Waiting for traffic source activity...</div>
-          </div>
-          
-        </div>
-      </section>
+  <div class="card">
+    <div class="section-title">Live Activity</div>
+    <div id="activityFeed" class="activity-feed" aria-live="polite">
+      <div class="activity-empty">Waiting for traffic source activity...</div>
+    </div>
+  </div>
+</section>
     </main>
   </div>
 
 <script>
-  (() => {
-    const STORAGE_KEY = "agentflow_metrics_v7";
+  document.addEventListener("DOMContentLoaded", () => {
+    const STORAGE_KEY = "agentflow_metrics_v8";
 
     const CAMPAIGN = {
       id: "#72843725",
@@ -465,7 +464,8 @@
       activityFeed: document.getElementById("activityFeed"),
       progressStat: document.getElementById("progressStat"),
       remainingStat: document.getElementById("remainingStat"),
-      windowStat: document.getElementById("windowStat")
+      windowStat: document.getElementById("windowStat"),
+      pageTitle: document.querySelector("h1")
     };
 
     const activityTemplates = {
@@ -541,7 +541,6 @@
       const endMidnight = toMidnight(CAMPAIGN.endDate);
       const msPerDay = 1000 * 60 * 60 * 24;
       const diffDays = Math.round((endMidnight - startMidnight) / msPerDay);
-
       return Math.max(1, diffDays + 1);
     }
 
@@ -580,6 +579,7 @@
         const parsed = JSON.parse(saved);
 
         if (
+          parsed.campaignId !== CAMPAIGN.id ||
           typeof parsed.impressions !== "number" ||
           typeof parsed.clicks !== "number" ||
           typeof parsed.conversions !== "number"
@@ -594,7 +594,17 @@
     }
 
     function saveMetrics(metrics) {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(metrics));
+      try {
+        localStorage.setItem(
+          STORAGE_KEY,
+          JSON.stringify({
+            campaignId: CAMPAIGN.id,
+            ...metrics
+          })
+        );
+      } catch (error) {
+        console.warn("Could not save metrics:", error);
+      }
     }
 
     function getCurrentMetrics() {
@@ -609,13 +619,15 @@
       if (!element) return;
 
       element.classList.add("updated");
-
       setTimeout(() => {
         element.classList.remove("updated");
       }, 450);
     }
 
     function renderStaticCampaignData() {
+      document.title = CAMPAIGN.title;
+      if (DOM.pageTitle) DOM.pageTitle.textContent = CAMPAIGN.title;
+
       DOM.campaignName.textContent = `Campaign: ${CAMPAIGN.id}`;
       DOM.destinationLink.href = CAMPAIGN.destinationUrl;
       DOM.destinationLink.textContent = CAMPAIGN.destinationUrl;
@@ -654,7 +666,6 @@
     function addActivity(type) {
       const feed = DOM.activityFeed;
       const emptyState = feed.querySelector(".activity-empty");
-
       if (emptyState) emptyState.remove();
 
       const country = randomItem(CAMPAIGN.activityCountries);
@@ -724,7 +735,6 @@
       impressions = clamp(impressions, 0, CAMPAIGN.targetImpressions);
 
       const expectedClicks = getExpectedClicks(impressions);
-
       if (current.clicks < expectedClicks) {
         const gap = expectedClicks - current.clicks;
         const step = Math.max(1, Math.min(gap, Math.ceil(gap * 0.18)));
@@ -736,7 +746,6 @@
       clicks = Math.max(0, clicks);
 
       const expectedConversions = getExpectedConversions(clicks);
-
       if (current.conversions < expectedConversions) {
         const gap = expectedConversions - current.conversions;
         const step = Math.max(1, Math.min(gap, Math.ceil(gap * 0.2)));
@@ -747,52 +756,31 @@
 
       conversions = Math.max(0, conversions);
 
-      let changed = false;
+      const changed =
+        impressions !== current.impressions ||
+        clicks !== current.clicks ||
+        conversions !== current.conversions;
 
-      if (impressions !== current.impressions) {
-        DOM.impressions.textContent = formatNumber(impressions);
-        pulseUpdate(DOM.impressions);
-        changed = true;
+      if (!changed) return;
 
-        if (Math.random() > 0.25) {
-          addActivity("impression");
-        }
+      renderMetrics(impressions, clicks, conversions);
+
+      pulseUpdate(DOM.impressions);
+      pulseUpdate(DOM.clicks);
+      pulseUpdate(DOM.conversions);
+      pulseUpdate(DOM.ctr);
+
+      if (impressions !== current.impressions && Math.random() > 0.25) {
+        addActivity("impression");
+      }
+      if (clicks !== current.clicks && Math.random() > 0.4) {
+        addActivity("click");
+      }
+      if (conversions !== current.conversions && Math.random() > 0.55) {
+        addActivity("conversion");
       }
 
-      if (clicks !== current.clicks) {
-        DOM.clicks.textContent = formatNumber(clicks);
-        pulseUpdate(DOM.clicks);
-        changed = true;
-
-        if (Math.random() > 0.4) {
-          addActivity("click");
-        }
-      }
-
-      if (conversions !== current.conversions) {
-        DOM.conversions.textContent = formatNumber(conversions);
-        pulseUpdate(DOM.conversions);
-        changed = true;
-
-        if (Math.random() > 0.55) {
-          addActivity("conversion");
-        }
-      }
-
-      const liveCTR = impressions > 0 ? clicks / impressions : CAMPAIGN.baseCTR;
-      DOM.ctr.textContent = formatPercent(liveCTR);
-
-      if (changed) {
-        pulseUpdate(DOM.ctr);
-        DOM.progressStat.textContent = formatPercent(
-          impressions / CAMPAIGN.targetImpressions
-        );
-        DOM.remainingStat.textContent = formatNumber(
-          Math.max(0, CAMPAIGN.targetImpressions - impressions)
-        );
-
-        saveMetrics({ impressions, clicks, conversions });
-      }
+      saveMetrics({ impressions, clicks, conversions });
     }
 
     function init() {
@@ -802,7 +790,7 @@
     }
 
     init();
-  })();
+  });
 </script>
 </body>
 </html>
