@@ -199,6 +199,10 @@
       padding-bottom: 6px;
     }
 
+    .value {
+      font-weight: 400;
+    }
+
     .metric-value {
       font-weight: 700;
       display: inline-block;
@@ -211,6 +215,22 @@
       border-radius: 6px;
       padding-left: 6px;
       padding-right: 6px;
+    }
+
+    .mini-stat-value {
+      font-size: 1.15rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+    }
+
+    .mini-stat-value.updated {
+      background-color: var(--highlight-color);
+      transform: scale(1.02);
+      border-radius: 6px;
+      padding-left: 6px;
+      padding-right: 6px;
+      display: inline-block;
+      transition: background-color 0.25s ease, transform 0.2s ease;
     }
 
     .link-out {
@@ -246,12 +266,6 @@
       font-weight: 700;
       text-transform: uppercase;
       letter-spacing: 0.03em;
-    }
-
-    .mini-stat-value {
-      font-size: 1.15rem;
-      font-weight: 800;
-      letter-spacing: -0.02em;
     }
 
     .activity-feed {
@@ -334,7 +348,7 @@
         <circle cx="7" cy="17" r="1" fill="currentColor" stroke="none"></circle>
         <circle cx="17" cy="7" r="1" fill="currentColor" stroke="none"></circle>
       </svg>
-      <h1>Agent-Flow API v2.4</h1>
+      <h1 id="appTitle">Agent-Flow API v2.4</h1>
     </header>
 
     <main>
@@ -357,18 +371,36 @@
               <div class="mini-stat-label">Target Impressions</div>
               <div id="target" class="mini-stat-value">--</div>
             </div>
+
             <div class="mini-stat">
               <div class="mini-stat-label">Remaining Impressions</div>
               <div id="remainingStat" class="mini-stat-value">0</div>
             </div>
-            <div class="mini-stat">
-              <div class="mini-stat-label">Progress</div>
-              <div id="progressStat" class="mini-stat-value">0%</div>
-            </div>
+
             <div class="mini-stat">
               <div class="mini-stat-label">Campaign Window</div>
               <div id="windowStat" class="mini-stat-value">--</div>
             </div>
+
+            <div class="mini-stat">
+              <div class="mini-stat-label">Progress</div>
+              <div id="progressStat" class="mini-stat-value">0%</div>
+            </div>
+          </div>
+
+          <div class="data-row">
+            <div class="label">Start Date:</div>
+            <div id="startDate" class="value">--</div>
+          </div>
+
+          <div class="data-row">
+            <div class="label">End Date:</div>
+            <div id="endDate" class="value">--</div>
+          </div>
+
+          <div class="data-row">
+            <div class="label">Delivered Impressions:</div>
+            <div id="impressions" class="metric-value">--</div>
           </div>
 
           <div class="data-row">
@@ -387,8 +419,8 @@
           </div>
 
           <div class="data-row">
-            <div class="label">Impressions:</div>
-            <div id="impressions" class="metric-value">--</div>
+            <div class="label">Clicks:</div>
+            <div id="clicks" class="metric-value">--</div>
           </div>
 
           <div class="data-row">
@@ -397,23 +429,8 @@
           </div>
 
           <div class="data-row">
-            <div class="label">Clicks:</div>
-            <div id="clicks" class="metric-value">--</div>
-          </div>
-
-          <div class="data-row">
             <div class="label">Conversions:</div>
             <div id="conversions" class="metric-value">--</div>
-          </div>
-
-          <div class="data-row">
-            <div class="label">Start Date:</div>
-            <div id="startDate" class="value">--</div>
-          </div>
-
-          <div class="data-row">
-            <div class="label">End Date:</div>
-            <div id="endDate" class="value">--</div>
           </div>
 
           <div class="data-row">
@@ -427,408 +444,324 @@
           <div id="activityFeed" class="activity-feed" aria-live="polite">
             <div class="activity-empty">Waiting for traffic source activity...</div>
           </div>
-          
         </div>
       </section>
     </main>
   </div>
 
   <script>
-  (() => {
-    const STORAGE_KEY = "agentflow_metrics_v8";
+    (() => {
+      const STORAGE_KEY = "agentflow_metrics_v8";
 
-    const CAMPAIGN = {
-      id: "#54397762",
-      title: "Agent-Flow API v2.4",
-      destinationUrl: "https://etsy.com/shop/PolysHanderArts",
-      startDate: "2026-03-05T00:00:00",
-      endDate: "2026-04-04T23:59:59",
-      targetImpressions: 100000,
-      baseCTR: 0.145,
-      conversionRate: 0.065,
-      geoTargets: ["United States", "Canada", "United Kingdom"],
-      activityCountries: ["United States", "Canada", "Australia", "United Kingdom"]
-    };
-
-    const CAMPAIGN_SIGNATURE = JSON.stringify({
-      id: CAMPAIGN.id,
-      startDate: CAMPAIGN.startDate,
-      endDate: CAMPAIGN.endDate,
-      targetImpressions: CAMPAIGN.targetImpressions,
-      baseCTR: CAMPAIGN.baseCTR,
-      conversionRate: CAMPAIGN.conversionRate,
-      destinationUrl: CAMPAIGN.destinationUrl
-    });
-
-    const DOM = {
-      campaignName: document.getElementById("campaignName"),
-      destinationLink: document.getElementById("destinationLink"),
-      target: document.getElementById("target"),
-      impressions: document.getElementById("impressions"),
-      ctr: document.getElementById("ctr"),
-      clicks: document.getElementById("clicks"),
-      conversions: document.getElementById("conversions"),
-      startDate: document.getElementById("startDate"),
-      endDate: document.getElementById("endDate"),
-      geoTargets: document.getElementById("geoTargets"),
-      activityFeed: document.getElementById("activityFeed"),
-      progressStat: document.getElementById("progressStat"),
-      remainingStat: document.getElementById("remainingStat"),
-      windowStat: document.getElementById("windowStat")
-    };
-
-    const activityTemplates = {
-      impression: [
-        "New impression delivered in {country}",
-        "Campaign displayed in {country}",
-        "Ad served to audience in {country}",
-        "Visibility event recorded in {country}"
-      ],
-      click: [
-        "New click recorded from {country}",
-        "Visitor clicked through from {country}",
-        "Traffic event captured from {country}",
-        "Engaged visitor arrived from {country}"
-      ],
-      conversion: [
-        "Conversion recorded from {country}",
-        "Lead captured from {country}",
-        "New buyer event from {country}",
-        "Conversion event tracked in {country}"
-      ]
-    };
-
-    function parseNumber(value) {
-      const cleaned = String(value).replace(/,/g, "").replace("%", "").trim();
-      const parsed = parseFloat(cleaned);
-      return Number.isNaN(parsed) ? 0 : parsed;
-    }
-
-    function formatNumber(value) {
-      return Number(value).toLocaleString();
-    }
-
-    function formatPercent(value) {
-      return `${(value * 100).toFixed(1)}%`;
-    }
-
-    function formatDate(dateString) {
-      return new Date(dateString).toLocaleDateString(undefined, {
-        year: "numeric",
-        month: "long",
-        day: "2-digit"
-      });
-    }
-
-    function clamp(value, min, max) {
-      return Math.min(Math.max(value, min), max);
-    }
-
-    function randomItem(list) {
-      return list[Math.floor(Math.random() * list.length)];
-    }
-
-    function now() {
-      return new Date();
-    }
-
-    function getCurrentTime() {
-      return now().toLocaleTimeString([], {
-        hour: "2-digit",
-        minute: "2-digit",
-        second: "2-digit"
-      });
-    }
-
-    function toMidnight(dateInput) {
-      const date = new Date(dateInput);
-      return new Date(date.getFullYear(), date.getMonth(), date.getDate());
-    }
-
-    function getCampaignWindowDays() {
-      const startMidnight = toMidnight(CAMPAIGN.startDate);
-      const endMidnight = toMidnight(CAMPAIGN.endDate);
-      const msPerDay = 1000 * 60 * 60 * 24;
-      const diffDays = Math.round((endMidnight - startMidnight) / msPerDay);
-
-      return Math.max(1, diffDays + 1);
-    }
-
-    function getElapsedRatio() {
-      const todayMidnight = toMidnight(now());
-      const startMidnight = toMidnight(CAMPAIGN.startDate);
-      const endMidnight = toMidnight(CAMPAIGN.endDate);
-      const msPerDay = 1000 * 60 * 60 * 24;
-
-      if (todayMidnight < startMidnight) return 0;
-      if (todayMidnight > endMidnight) return 1;
-
-      const totalDays = getCampaignWindowDays();
-      const elapsedDays = Math.floor((todayMidnight - startMidnight) / msPerDay) + 1;
-
-      return clamp(elapsedDays / totalDays, 0, 1);
-    }
-
-    function getExpectedImpressions() {
-      return Math.floor(CAMPAIGN.targetImpressions * getElapsedRatio());
-    }
-
-    function getExpectedClicks(impressions) {
-      return Math.floor(impressions * CAMPAIGN.baseCTR);
-    }
-
-    function getExpectedConversions(clicks) {
-      return Math.floor(clicks * CAMPAIGN.conversionRate);
-    }
-
-    function safeLoadMetrics() {
-      try {
-        const savedSignature = localStorage.getItem(`${STORAGE_KEY}_signature`);
-
-        if (savedSignature !== CAMPAIGN_SIGNATURE) {
-          localStorage.removeItem(STORAGE_KEY);
-          localStorage.setItem(`${STORAGE_KEY}_signature`, CAMPAIGN_SIGNATURE);
-          return null;
-        }
-
-        const saved = localStorage.getItem(STORAGE_KEY);
-        if (!saved) return null;
-
-        const parsed = JSON.parse(saved);
-
-        if (
-          typeof parsed.impressions !== "number" ||
-          typeof parsed.clicks !== "number" ||
-          typeof parsed.conversions !== "number"
-        ) {
-          return null;
-        }
-
-        return parsed;
-      } catch {
-        return null;
-      }
-    }
-
-    function saveMetrics(metrics) {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(metrics));
-      localStorage.setItem(`${STORAGE_KEY}_signature`, CAMPAIGN_SIGNATURE);
-    }
-
-    function getCurrentMetrics() {
-      return {
-        impressions: parseNumber(DOM.impressions.textContent),
-        clicks: parseNumber(DOM.clicks.textContent),
-        conversions: parseNumber(DOM.conversions.textContent)
+      const CAMPAIGN = {
+        id: "#54397762",
+        title: "Agent-Flow API v2.4",
+        status: "Active",
+        destinationUrl: "https://etsy.com/shop/PolysHanderArts",
+        startDate: "2026-03-05T00:00:00",
+        endDate: "2026-04-04T23:59:59",
+        targetImpressions: 100000,
+        baseCTR: 0.145,
+        conversionRate: 0.065,
+        geoTargets: [
+          "United States",
+          "Canada",
+          "United Kingdom"
+        ],
+        activityCountries: [
+          "United States",
+          "Canada",
+          "Australia",
+          "United Kingdom"
+        ]
       };
-    }
 
-    function pulseUpdate(element) {
-      if (!element) return;
+      const DOM = {
+        appTitle: document.getElementById("appTitle"),
+        campaignName: document.getElementById("campaignName"),
+        destinationLink: document.getElementById("destinationLink"),
+        target: document.getElementById("target"),
+        impressions: document.getElementById("impressions"),
+        ctr: document.getElementById("ctr"),
+        clicks: document.getElementById("clicks"),
+        conversions: document.getElementById("conversions"),
+        startDate: document.getElementById("startDate"),
+        endDate: document.getElementById("endDate"),
+        geoTargets: document.getElementById("geoTargets"),
+        activityFeed: document.getElementById("activityFeed"),
+        progressStat: document.getElementById("progressStat"),
+        remainingStat: document.getElementById("remainingStat"),
+        windowStat: document.getElementById("windowStat")
+      };
 
-      element.classList.add("updated");
+      const activityTemplates = {
+        impression: [
+          "New impression delivered in {country}",
+          "Campaign displayed in {country}",
+          "Ad served to audience in {country}",
+          "Visibility event recorded in {country}"
+        ],
+        click: [
+          "New click recorded from {country}",
+          "Visitor clicked through from {country}",
+          "Traffic event captured from {country}",
+          "Engaged visitor arrived from {country}"
+        ],
+        conversion: [
+          "Conversion recorded from {country}",
+          "Lead captured from {country}",
+          "New buyer event from {country}",
+          "Conversion event tracked in {country}"
+        ]
+      };
 
-      setTimeout(() => {
-        element.classList.remove("updated");
-      }, 450);
-    }
-
-    function renderStaticCampaignData() {
-      DOM.campaignName.textContent = `Campaign: ${CAMPAIGN.id}`;
-      DOM.destinationLink.href = CAMPAIGN.destinationUrl;
-      DOM.destinationLink.textContent = CAMPAIGN.destinationUrl;
-      DOM.target.textContent = formatNumber(CAMPAIGN.targetImpressions);
-      DOM.startDate.textContent = formatDate(CAMPAIGN.startDate);
-      DOM.endDate.textContent = formatDate(CAMPAIGN.endDate);
-      DOM.geoTargets.textContent = CAMPAIGN.geoTargets.join(", ");
-      DOM.windowStat.textContent = `${getCampaignWindowDays()} days`;
-    }
-
-    function renderMetrics(impressions, clicks, conversions) {
-      const safeImpressions = clamp(impressions, 0, CAMPAIGN.targetImpressions);
-      const safeClicks = Math.max(0, clicks);
-      const safeConversions = Math.max(0, conversions);
-
-      DOM.impressions.textContent = formatNumber(safeImpressions);
-      DOM.clicks.textContent = formatNumber(safeClicks);
-      DOM.conversions.textContent = formatNumber(safeConversions);
-
-      const liveCTR = safeImpressions > 0
-        ? safeClicks / safeImpressions
-        : CAMPAIGN.baseCTR;
-
-      DOM.ctr.textContent = formatPercent(liveCTR);
-
-      const progress = CAMPAIGN.targetImpressions > 0
-        ? safeImpressions / CAMPAIGN.targetImpressions
-        : 0;
-
-      DOM.progressStat.textContent = formatPercent(progress);
-      DOM.remainingStat.textContent = formatNumber(
-        Math.max(0, CAMPAIGN.targetImpressions - safeImpressions)
-      );
-    }
-
-    function addActivity(type) {
-      const feed = DOM.activityFeed;
-      const emptyState = feed.querySelector(".activity-empty");
-
-      if (emptyState) emptyState.remove();
-
-      const country = randomItem(CAMPAIGN.activityCountries);
-      const template = randomItem(activityTemplates[type]);
-      const message = template.replace("{country}", country);
-
-      const item = document.createElement("div");
-      item.className = "activity-item";
-
-      const text = document.createElement("div");
-      text.className = "activity-text";
-      text.textContent = message;
-
-      const time = document.createElement("div");
-      time.className = "activity-time";
-      time.textContent = getCurrentTime();
-
-      item.appendChild(text);
-      item.appendChild(time);
-      feed.prepend(item);
-
-      while (feed.children.length > 8) {
-        feed.removeChild(feed.lastChild);
+      function parseNumber(value) {
+        const cleaned = String(value).replace(/,/g, "").replace("%", "").trim();
+        const parsed = parseFloat(cleaned);
+        return Number.isNaN(parsed) ? 0 : parsed;
       }
-    }
 
-    function initializeMetrics() {
-      const saved = safeLoadMetrics();
+      function formatNumber(value) {
+        return Number(value).toLocaleString();
+      }
 
-      if (saved) {
-        const impressions = clamp(saved.impressions, 0, CAMPAIGN.targetImpressions);
-        const clicks = Math.max(0, saved.clicks);
-        const conversions = Math.max(0, saved.conversions);
+      function formatPercent(value) {
+        return `${(value * 100).toFixed(1)}%`;
+      }
+
+      function formatDate(dateString) {
+        return new Date(dateString).toLocaleDateString(undefined, {
+          year: "numeric",
+          month: "long",
+          day: "2-digit"
+        });
+      }
+
+      function clamp(value, min, max) {
+        return Math.min(Math.max(value, min), max);
+      }
+
+      function randomItem(list) {
+        return list[Math.floor(Math.random() * list.length)];
+      }
+
+      function now() {
+        return new Date();
+      }
+
+      function getCurrentTime() {
+        return now().toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit",
+          second: "2-digit"
+        });
+      }
+
+      function toMidnight(dateInput) {
+        const date = new Date(dateInput);
+        return new Date(date.getFullYear(), date.getMonth(), date.getDate());
+      }
+
+      function getCampaignWindowDays() {
+        const startMidnight = toMidnight(CAMPAIGN.startDate);
+        const endMidnight = toMidnight(CAMPAIGN.endDate);
+        const msPerDay = 1000 * 60 * 60 * 24;
+        const diffDays = Math.round((endMidnight - startMidnight) / msPerDay);
+        return Math.max(1, diffDays + 1);
+      }
+
+      function getElapsedRatio() {
+        const current = now();
+        const start = new Date(CAMPAIGN.startDate);
+        const end = new Date(CAMPAIGN.endDate);
+
+        if (current <= start) return 0;
+        if (current >= end) return 1;
+
+        return clamp((current - start) / (end - start), 0, 1);
+      }
+
+      function getExpectedImpressions() {
+        return Math.floor(CAMPAIGN.targetImpressions * getElapsedRatio());
+      }
+
+      function getExpectedClicks(impressions) {
+        return Math.floor(impressions * CAMPAIGN.baseCTR);
+      }
+
+      function getExpectedConversions(clicks) {
+        return Math.floor(clicks * CAMPAIGN.conversionRate);
+      }
+
+      function safeLoadMetrics() {
+        try {
+          const saved = localStorage.getItem(STORAGE_KEY);
+          if (!saved) return null;
+
+          const parsed = JSON.parse(saved);
+
+          if (
+            typeof parsed.impressions !== "number" ||
+            typeof parsed.clicks !== "number" ||
+            typeof parsed.conversions !== "number"
+          ) {
+            return null;
+          }
+
+          return parsed;
+        } catch {
+          return null;
+        }
+      }
+
+      function saveMetrics(metrics) {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(metrics));
+      }
+
+      function getCurrentMetrics() {
+        return {
+          impressions: parseNumber(DOM.impressions.textContent),
+          clicks: parseNumber(DOM.clicks.textContent),
+          conversions: parseNumber(DOM.conversions.textContent)
+        };
+      }
+
+      function pulseUpdate(element) {
+        if (!element) return;
+
+        element.classList.add("updated");
+
+        setTimeout(() => {
+          element.classList.remove("updated");
+        }, 450);
+      }
+
+      function renderStaticCampaignData() {
+        DOM.appTitle.textContent = CAMPAIGN.title;
+        DOM.campaignName.textContent = `Campaign: ${CAMPAIGN.id}`;
+        DOM.destinationLink.href = CAMPAIGN.destinationUrl;
+        DOM.destinationLink.textContent = CAMPAIGN.destinationUrl;
+        DOM.target.textContent = formatNumber(CAMPAIGN.targetImpressions);
+        DOM.startDate.textContent = formatDate(CAMPAIGN.startDate);
+        DOM.endDate.textContent = formatDate(CAMPAIGN.endDate);
+        DOM.geoTargets.textContent = CAMPAIGN.geoTargets.join(", ");
+        DOM.windowStat.textContent = `${getCampaignWindowDays()} days`;
+      }
+
+      function renderMetrics(impressions, clicks, conversions) {
+        const safeImpressions = clamp(impressions, 0, CAMPAIGN.targetImpressions);
+        const safeClicks = Math.max(0, clicks);
+        const safeConversions = Math.max(0, conversions);
+
+        DOM.impressions.textContent = formatNumber(safeImpressions);
+        DOM.clicks.textContent = formatNumber(safeClicks);
+        DOM.conversions.textContent = formatNumber(safeConversions);
+
+        const liveCTR = safeImpressions > 0
+          ? safeClicks / safeImpressions
+          : CAMPAIGN.baseCTR;
+
+        DOM.ctr.textContent = formatPercent(liveCTR);
+
+        const progress = CAMPAIGN.targetImpressions > 0
+          ? safeImpressions / CAMPAIGN.targetImpressions
+          : 0;
+
+        DOM.progressStat.textContent = formatPercent(progress);
+        DOM.remainingStat.textContent = formatNumber(
+          Math.max(0, CAMPAIGN.targetImpressions - safeImpressions)
+        );
+      }
+
+      function addActivity(type) {
+        const feed = DOM.activityFeed;
+        const emptyState = feed.querySelector(".activity-empty");
+
+        if (emptyState) emptyState.remove();
+
+        const country = randomItem(CAMPAIGN.activityCountries);
+        const template = randomItem(activityTemplates[type]);
+        const message = template.replace("{country}", country);
+
+        const item = document.createElement("div");
+        item.className = "activity-item";
+
+        const text = document.createElement("div");
+        text.className = "activity-text";
+        text.textContent = message;
+
+        const time = document.createElement("div");
+        time.className = "activity-time";
+        time.textContent = getCurrentTime();
+
+        item.appendChild(text);
+        item.appendChild(time);
+        feed.prepend(item);
+
+        while (feed.children.length > 8) {
+          feed.removeChild(feed.lastChild);
+        }
+      }
+
+      function initializeMetrics() {
+        const saved = safeLoadMetrics();
+
+        if (saved) {
+          renderMetrics(saved.impressions, saved.clicks, saved.conversions);
+          return;
+        }
+
+        const impressions = clamp(getExpectedImpressions(), 0, CAMPAIGN.targetImpressions);
+        const clicks = getExpectedClicks(impressions);
+        const conversions = getExpectedConversions(clicks);
 
         renderMetrics(impressions, clicks, conversions);
-        return;
-      }
-
-      const impressions = clamp(getExpectedImpressions(), 0, CAMPAIGN.targetImpressions);
-      const clicks = getExpectedClicks(impressions);
-      const conversions = getExpectedConversions(clicks);
-
-      renderMetrics(impressions, clicks, conversions);
-      saveMetrics({ impressions, clicks, conversions });
-    }
-
-    function updateMetrics() {
-      const current = getCurrentMetrics();
-
-      const expectedImpressions = getExpectedImpressions();
-      const variance = Math.floor(Math.random() * 51) - 25;
-
-      const adjustedImpressions = clamp(
-        expectedImpressions + variance,
-        0,
-        CAMPAIGN.targetImpressions
-      );
-
-      let impressions = current.impressions;
-      let clicks = current.clicks;
-      let conversions = current.conversions;
-
-      if (current.impressions < adjustedImpressions) {
-        const gap = adjustedImpressions - current.impressions;
-        const step = Math.max(1, Math.min(gap, Math.ceil(gap * 0.15)));
-        impressions = current.impressions + step;
-      } else if (current.impressions > adjustedImpressions + 100) {
-        impressions = adjustedImpressions;
-      }
-
-      impressions = clamp(impressions, 0, CAMPAIGN.targetImpressions);
-
-      const expectedClicks = getExpectedClicks(impressions);
-
-      if (current.clicks < expectedClicks) {
-        const gap = expectedClicks - current.clicks;
-        const step = Math.max(1, Math.min(gap, Math.ceil(gap * 0.18)));
-        clicks = current.clicks + step;
-      } else if (current.clicks > expectedClicks + 20) {
-        clicks = expectedClicks;
-      }
-
-      clicks = Math.max(0, clicks);
-
-      const expectedConversions = getExpectedConversions(clicks);
-
-      if (current.conversions < expectedConversions) {
-        const gap = expectedConversions - current.conversions;
-        const step = Math.max(1, Math.min(gap, Math.ceil(gap * 0.2)));
-        conversions = current.conversions + step;
-      } else if (current.conversions > expectedConversions + 5) {
-        conversions = expectedConversions;
-      }
-
-      conversions = Math.max(0, conversions);
-
-      let changed = false;
-
-      if (impressions !== current.impressions) {
-        DOM.impressions.textContent = formatNumber(impressions);
-        pulseUpdate(DOM.impressions);
-        changed = true;
-
-        if (Math.random() > 0.25) {
-          addActivity("impression");
-        }
-      }
-
-      if (clicks !== current.clicks) {
-        DOM.clicks.textContent = formatNumber(clicks);
-        pulseUpdate(DOM.clicks);
-        changed = true;
-
-        if (Math.random() > 0.4) {
-          addActivity("click");
-        }
-      }
-
-      if (conversions !== current.conversions) {
-        DOM.conversions.textContent = formatNumber(conversions);
-        pulseUpdate(DOM.conversions);
-        changed = true;
-
-        if (Math.random() > 0.55) {
-          addActivity("conversion");
-        }
-      }
-
-      const liveCTR = impressions > 0 ? clicks / impressions : CAMPAIGN.baseCTR;
-      DOM.ctr.textContent = formatPercent(liveCTR);
-
-      if (changed) {
-        pulseUpdate(DOM.ctr);
-
-        DOM.progressStat.textContent = formatPercent(
-          CAMPAIGN.targetImpressions > 0
-            ? impressions / CAMPAIGN.targetImpressions
-            : 0
-        );
-
-        DOM.remainingStat.textContent = formatNumber(
-          Math.max(0, CAMPAIGN.targetImpressions - impressions)
-        );
-
         saveMetrics({ impressions, clicks, conversions });
       }
-    }
 
-    function init() {
-      renderStaticCampaignData();
-      initializeMetrics();
-      setInterval(updateMetrics, 5000);
+      function updateMetrics() {
+  const current = getCurrentMetrics();
+  
+  const impressions = clamp(
+    Math.floor(CAMPAIGN.targetImpressions * getElapsedRatio()),
+    0,
+    CAMPAIGN.targetImpressions
+  );
+  
+  const clicks = getExpectedClicks(impressions);
+  const conversions = getExpectedConversions(clicks);
+  
+  renderMetrics(impressions, clicks, conversions);
+  
+  if (impressions !== current.impressions) {
+    pulseUpdate(DOM.progressStat);
+    pulseUpdate(DOM.remainingStat);
+    
+    const impressionDiff = impressions - current.impressions;
+    const clickDiff = clicks - current.clicks;
+    const conversionDiff = conversions - current.conversions;
+    
+    if (conversionDiff > 0) {
+      addActivity("conversion");
+    } else if (clickDiff > 0) {
+      addActivity("click");
+    } else if (impressionDiff > 0) {
+      addActivity("impression");
     }
+  } else if (Math.random() < 0.12) {
+    addActivity("impression");
+  }
+  
+  saveMetrics({ impressions, clicks, conversions });
+}
+      function init() {
+        renderStaticCampaignData();
+        initializeMetrics();
+        setInterval(updateMetrics, 1000);
+      }
 
-    init();
-  })();
-</script>
+      init();
+    })();
+  </script>
 </body>
 </html>
