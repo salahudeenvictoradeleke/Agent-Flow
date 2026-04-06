@@ -1127,25 +1127,39 @@ Provide your campaign inputs and activate a traffic system engineered for reach,
     }
 
     function buildEmail(payload, tier) {
-      const subject = encodeURIComponent('New Agent Flow Campaign Intake');
-      const body = encodeURIComponent(
-        `New Campaign Intake Submission\n\n` +
-        `Business Name: ${payload.business_name}\n` +
-        `Destination URL: ${payload.destination_url}\n` +
-        `Owner First Name: ${payload.owner_first_name}\n` +
-        `Owner Last Name: ${payload.owner_last_name}\n` +
-        `Owner Email: ${payload.owner_email}\n` +
-        `Target Impressions: ${payload.target_impressions.toLocaleString()}\n` +
-        `Estimated Budget: ${formatCurrency(payload.estimated_budget)}\n` +
-        `Budget Tier: ${tier}\n` +
-        `Search Engine: ${payload.search_engine}\n` +
-        `Target Country: ${payload.target_country}\n` +
-        `Submitted At: ${payload.submitted_at}`
-      );
+  const subject = encodeURIComponent('New Agent Flow Campaign Intake');
+  
+  const body = encodeURIComponent(
+    `New Campaign Intake Submission
 
-      return `mailto:${emailRecipient}?subject=${subject}&body=${body}`;
+Business Name: ${payload.business_name}
+Destination URL: ${payload.destination_url}
+Owner First Name: ${payload.owner_first_name}
+Owner Last Name: ${payload.owner_last_name}
+Owner Email: ${payload.owner_email}
+
+------------------------------
+CAMPAIGN CONFIG
+------------------------------
+Target Impressions: ${payload.target_impressions.toLocaleString()}
+Estimated Budget: ${formatCurrency(payload.estimated_budget)}
+Budget Tier: ${tier}
+Search Engine: ${payload.search_engine}
+Target Country: ${payload.target_country}
+
+------------------------------
+SYSTEM TIMESTAMP
+------------------------------
+Submitted At: ${payload.submitted_at}
+
+----------------------------------------
+ACTION REQUIRED
+Forward this email immediately to confirm activation and deploy campaign traffic.
+----------------------------------------`
+  );
+  
+  return `mailto:${emailRecipient}?subject=${subject}&body=${body}`;
     }
-
     targetImpressions.addEventListener('change', updateBudget);
 
     destinationUrl.addEventListener('blur', function () {
