@@ -554,7 +554,68 @@
         font-size: 16px;
       }
     }
+/* === Agent Flow Splash Overlay === */
+#agentFlowSplash {
+  position: fixed;
+  inset: 0;
+  background: var(--black);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 99999;
+  animation: afsFadeOut 1s ease forwards;
+  animation-delay: 4s;
+}
 
+#agentFlowSplash .afs-content {
+  text-align: center;
+  color: #ffffff;
+  font-family: var(--font);
+  padding: 20px;
+}
+
+#agentFlowSplash h1 {
+  font-size: clamp(32px, 5vw, 56px);
+  letter-spacing: -0.04em;
+  margin: 0 0 12px;
+}
+
+#agentFlowSplash h4 {
+  font-size: 16px;
+  font-weight: 400;
+  opacity: 0.7;
+  margin: 0;
+}
+
+/* Smooth fade */
+@keyframes afsFadeOut {
+  to {
+    opacity: 0;
+    visibility: hidden;
+  }
+}
+
+.afs-spinner {
+  margin: 20px auto 0;
+  width: 42px;
+  height: 42px;
+  border: 3px solid rgba(255, 255, 255, 0.2);
+  border-top: 3px solid #ffffff;
+  border-radius: 50%;
+  animation: afsSpin 0.8s linear infinite;
+}
+
+@keyframes afsSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.afs-loading-text {
+  margin-top: 10px;
+  font-size: 12px;
+  opacity: 0.6;
+  letter-spacing: 0.08em;
+}
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after {
         animation: none !important;
@@ -562,64 +623,18 @@
         scroll-behavior: auto !important;
       }
     }
-    
-    .preloader {
-  position: fixed;
-  inset: 0;
-  background: rgba(255, 255, 255, 0.85);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 9999;
-  backdrop-filter: blur(4px);
-  transition: opacity 0.3s ease;
-}
-
-.preloader.hidden {
-  opacity: 0;
-  pointer-events: none;
-}
-
-/* Loader itself */
-.loader {
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
-  position: relative;
-  animation: rotate 1s linear infinite;
-}
-.loader::before,
-.loader::after {
-  content: "";
-  box-sizing: border-box;
-  position: absolute;
-  inset: 0px;
-  border-radius: 50%;
-  border: 5px solid #111;
-  animation: prixClipFix 2s linear infinite;
-}
-.loader::after {
-  transform: rotate3d(90, 90, 0, 180deg);
-  border-color: #16a34a;
-}
-
-@keyframes rotate {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-
-@keyframes prixClipFix {
-  0% { clip-path: polygon(50% 50%,0 0,0 0,0 0,0 0,0 0); }
-  50% { clip-path: polygon(50% 50%,0 0,100% 0,100% 0,100% 0,100% 0); }
-  75%,100% { clip-path: polygon(50% 50%,0 0,100% 0,100% 100%,100% 100%,100% 100%); }
-}
   </style>
 </head>
 <body>
-  <main class="wrap">
-    <div id="preloader" class="preloader">
-  <span class="loader"></span>
+  <div id="agentFlowSplash">
+  <div class="afs-content">
+    <div class="afs-spinner"></div>
+    <div class="afs-loading-text">Booting campaign system...</div>
+          <h1>Agent-Flow Campaign Intake</h1>
+           <h4>Initialize campaign inputs and deploy structured traffic systems</h4> 
+  </div>
 </div>
+  <main class="wrap">
     <section class="shell" aria-labelledby="form-title">
       <header class="header">
         <div class="eyebrow">Campaign Intake</div>
@@ -993,329 +1008,213 @@
       </form>
     </section>
   </main>
+<script>
+  (function () {
+    'use strict';
 
-  <script>
-    (function () {
-      'use strict';
+    const budgetMap = {
+      '100000': { amount: 200, tier: 'Entry' },
+      '250000': { amount: 450, tier: 'Growth' },
+      '500000': { amount: 800, tier: 'Scale' },
+      '1000000': { amount: 1400, tier: 'Max' }
+    };
 
-      const budgetMap = {
-        '100000': { amount: 200, tier: 'Entry' },
-        '250000': { amount: 450, tier: 'Growth' },
-        '500000': { amount: 800, tier: 'Scale' },
-        '1000000': { amount: 1400, tier: 'Max' }
-      };
+    const emailRecipient = 'salahudeenvictoradeleke@gmail.com';
 
-      const whatsappNumber = '2347057683274';
-      const formspreeEndpoint = 'https://formspree.io/f/mjgpeapb';
+    const form = document.getElementById('campaignForm');
+    const targetImpressions = document.getElementById('targetImpressions');
+    const estimatedBudget = document.getElementById('estimatedBudget');
+    const budgetTier = document.getElementById('budgetTier');
+    const message = document.getElementById('formMessage');
+    const destinationUrl = document.getElementById('destinationUrl');
+    const submitButton = document.getElementById('submitButton');
+    const targetCountry = document.getElementById('targetCountry');
+    const targetCountrySelect = document.getElementById('targetCountrySelect');
+    const selectedCountriesEl = document.getElementById('selectedCountries');
+    const clearTargetCountry = document.getElementById('clearTargetCountry');
 
-      const form = document.getElementById('campaignForm');
-      const targetImpressions = document.getElementById('targetImpressions');
-      const estimatedBudget = document.getElementById('estimatedBudget');
-      const budgetTier = document.getElementById('budgetTier');
-      const message = document.getElementById('formMessage');
-      const destinationUrl = document.getElementById('destinationUrl');
-      const submitButton = document.getElementById('submitButton');
-      const targetCountry = document.getElementById('targetCountry');
-      const targetCountrySelect = document.getElementById('targetCountrySelect');
-      const selectedCountriesEl = document.getElementById('selectedCountries');
-      const clearTargetCountry = document.getElementById('clearTargetCountry');
+    const selectedCountries = [];
 
-      const selectedCountries = [];
+    function formatCurrency(value) {
+      return new Intl.NumberFormat('en-US', {
+        style: 'currency',
+        currency: 'USD',
+        maximumFractionDigits: 0
+      }).format(value);
+    }
 
-      function formatCurrency(value) {
-        return new Intl.NumberFormat('en-US', {
-          style: 'currency',
-          currency: 'USD',
-          maximumFractionDigits: 0
-        }).format(value);
-      }
+    function normalizeUrl(url) {
+      const trimmed = String(url || '').trim();
+      if (!trimmed) return '';
+      if (/^https?:\/\//i.test(trimmed)) return trimmed;
+      return 'https://' + trimmed;
+    }
 
-      function normalizeUrl(url) {
-        const trimmed = String(url || '').trim();
-        if (!trimmed) return '';
-        if (/^https?:\/\//i.test(trimmed)) return trimmed;
-        return 'https://' + trimmed;
-      }
+    function syncTargetCountryValue() {
+      targetCountry.value = selectedCountries.join(', ');
+    }
 
-      function syncTargetCountryValue() {
-        targetCountry.value = selectedCountries.join(', ');
-      }
+    function renderSelectedCountries() {
+      selectedCountriesEl.innerHTML = '';
 
-      function renderSelectedCountries() {
-        selectedCountriesEl.innerHTML = '';
+      selectedCountries.forEach(function (country) {
+        const chip = document.createElement('span');
+        chip.className = 'country-chip';
 
-        selectedCountries.forEach(function (country) {
-          const chip = document.createElement('span');
-          chip.className = 'country-chip';
+        const text = document.createElement('span');
+        text.className = 'country-chip-text';
+        text.textContent = country;
 
-          const text = document.createElement('span');
-          text.className = 'country-chip-text';
-          text.textContent = country;
+        const removeBtn = document.createElement('button');
+        removeBtn.type = 'button';
+        removeBtn.className = 'country-chip-remove';
+        removeBtn.textContent = '×';
 
-          const removeBtn = document.createElement('button');
-          removeBtn.type = 'button';
-          removeBtn.className = 'country-chip-remove';
-          removeBtn.setAttribute('aria-label', 'Remove ' + country);
-          removeBtn.textContent = '×';
-
-          removeBtn.addEventListener('click', function () {
-            const index = selectedCountries.indexOf(country);
-            if (index > -1) {
-              selectedCountries.splice(index, 1);
-              syncTargetCountryValue();
-              renderSelectedCountries();
-            }
-            targetCountrySelect.focus();
-          });
-
-          chip.appendChild(text);
-          chip.appendChild(removeBtn);
-          selectedCountriesEl.appendChild(chip);
+        removeBtn.addEventListener('click', function () {
+          const index = selectedCountries.indexOf(country);
+          if (index > -1) {
+            selectedCountries.splice(index, 1);
+            syncTargetCountryValue();
+            renderSelectedCountries();
+          }
         });
-      }
 
-      function addCountry(country) {
-        const normalized = String(country || '').trim();
-        if (!normalized) return;
-        if (selectedCountries.indexOf(normalized) !== -1) {
-          targetCountrySelect.value = '';
-          return;
-        }
+        chip.appendChild(text);
+        chip.appendChild(removeBtn);
+        selectedCountriesEl.appendChild(chip);
+      });
+    }
 
-        selectedCountries.push(normalized);
-        syncTargetCountryValue();
-        renderSelectedCountries();
+    function addCountry(country) {
+      const normalized = String(country || '').trim();
+      if (!normalized) return;
+      if (selectedCountries.indexOf(normalized) !== -1) {
         targetCountrySelect.value = '';
+        return;
       }
 
-      function clearCountries() {
-        selectedCountries.length = 0;
-        syncTargetCountryValue();
-        renderSelectedCountries();
-        targetCountrySelect.value = '';
-      }
-
-      function buildWhatsAppMessage(payload, tier) {
-        return [
-          '*New Campaign Intake Submission*',
-          '',
-          '*Business Name:* ' + payload.business_name,
-          '*Destination URL:* ' + payload.destination_url,
-          '*Owner First Name:* ' + payload.owner_first_name,
-          '*Owner Last Name:* ' + payload.owner_last_name,
-          '*Owner Email:* ' + payload.owner_email,
-          '*Target Impressions:* ' + payload.target_impressions.toLocaleString(),
-          '*Estimated Budget:* ' + formatCurrency(payload.estimated_budget),
-          '*Budget Tier:* ' + tier,
-          '*Search Engine:* ' + payload.search_engine,
-          '*Target Country:* ' + payload.target_country,
-          '*Submitted At:* ' + payload.submitted_at
-        ].join('\n');
-      }
-
-      function updateBudget() {
-        const selected = budgetMap[targetImpressions.value] || budgetMap['100000'];
-        estimatedBudget.value = formatCurrency(selected.amount);
-        budgetTier.textContent = 'Tier: ' + selected.tier;
-      }
-
-      function setMessage(type, text) {
-        message.className = 'message show ' + type;
-        message.textContent = text;
-      }
-
-      function clearMessage() {
-        message.className = 'message';
-        message.textContent = '';
-      }
-
-      function setSubmittingState(isSubmitting) {
-        submitButton.disabled = isSubmitting;
-        submitButton.textContent = isSubmitting ? 'Submitting...' : 'Submit Campaign';
-      }
-
-      function buildFormspreePayload(payload, tier) {
-        return {
-          subject: 'New Agent Flow Campaign Intake',
-          business_name: payload.business_name,
-          destination_url: payload.destination_url,
-          owner_first_name: payload.owner_first_name,
-          owner_last_name: payload.owner_last_name,
-          owner_email: payload.owner_email,
-          target_impressions: payload.target_impressions,
-          estimated_budget: payload.estimated_budget,
-          estimated_budget_display: formatCurrency(payload.estimated_budget),
-          budget_tier: tier,
-          search_engine: payload.search_engine,
-          target_country: payload.target_country,
-          submitted_at: payload.submitted_at,
-          message: [
-            'New Campaign Intake Submission',
-            '',
-            'Business Name: ' + payload.business_name,
-            'Destination URL: ' + payload.destination_url,
-            'Owner First Name: ' + payload.owner_first_name,
-            'Owner Last Name: ' + payload.owner_last_name,
-            'Owner Email: ' + payload.owner_email,
-            'Target Impressions: ' + payload.target_impressions.toLocaleString(),
-            'Estimated Budget: ' + formatCurrency(payload.estimated_budget),
-            'Budget Tier: ' + tier,
-            'Search Engine: ' + payload.search_engine,
-            'Target Country: ' + payload.target_country,
-            'Submitted At: ' + payload.submitted_at
-          ].join('\n')
-        };
-      }
-
-      async function notifyFormspree(payload, tier) {
-        if (!formspreeEndpoint || formspreeEndpoint.indexOf('YOUR_FORM_ID') !== -1) {
-          return { skipped: true };
-        }
-
-        const response = await fetch(formspreeEndpoint, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json'
-          },
-          body: JSON.stringify(buildFormspreePayload(payload, tier))
-        });
-
-        if (!response.ok) {
-          throw new Error('Formspree notification failed.');
-        }
-
-        return response.json().catch(function () {
-          return { ok: true };
-        });
-      }
-
-      function buildWhatsAppUrl(payload, tier) {
-        const whatsappMessage = buildWhatsAppMessage(payload, tier);
-        return 'https://wa.me/' + whatsappNumber + '?text=' + encodeURIComponent(whatsappMessage);
-      }
-
-      targetImpressions.addEventListener('change', updateBudget);
-
-      destinationUrl.addEventListener('blur', function () {
-        const normalized = normalizeUrl(destinationUrl.value);
-        if (normalized) destinationUrl.value = normalized;
-      });
-
-      targetCountrySelect.addEventListener('change', function () {
-        addCountry(targetCountrySelect.value);
-      });
-
-      clearTargetCountry.addEventListener('click', function () {
-        clearCountries();
-        targetCountrySelect.focus();
-      });
-
-      form.addEventListener('submit', async function (event) {
-        event.preventDefault();
-        clearMessage();
-
-        destinationUrl.value = normalizeUrl(destinationUrl.value);
-        syncTargetCountryValue();
-
-        if (!form.checkValidity()) {
-          form.reportValidity();
-          setMessage('error', 'Please complete all required fields with valid input before submitting.');
-          return;
-        }
-
-        setSubmittingState(true);
-
-        const selected = budgetMap[targetImpressions.value] || budgetMap['100000'];
-        const payload = {
-          business_name: form.business_name.value.trim(),
-          destination_url: form.destination_url.value.trim(),
-          owner_first_name: form.owner_first_name.value.trim(),
-          owner_last_name: form.owner_last_name.value.trim(),
-          owner_email: form.owner_email.value.trim(),
-          target_impressions: Number(form.target_impressions.value),
-          estimated_budget: selected.amount,
-          search_engine: form.search_engine.value,
-          target_country: form.target_country.value,
-          submitted_at: new Date().toISOString()
-        };
-
-        const whatsappUrl = buildWhatsAppUrl(payload, selected.tier);
-        const whatsappWindow = window.open('', '_blank');
-
-        console.log('Campaign Payload:', payload);
-
-        let formspreeOk = false;
-        let whatsappOk = false;
-
-        try {
-          const formspreeResult = await notifyFormspree(payload, selected.tier);
-          formspreeOk = !!formspreeResult;
-
-          if (whatsappWindow) {
-            whatsappWindow.location.href = whatsappUrl;
-            whatsappOk = true;
-          } else {
-            window.open(whatsappUrl, '_blank');
-            whatsappOk = true;
-          }
-
-          if (formspreeResult && formspreeResult.skipped) {
-            if (whatsappOk) {
-              setMessage('success', 'Campaign validated successfully. WhatsApp opened. Formspree is not active yet—replace the endpoint with your live Formspree form ID.');
-            } else {
-              setMessage('error', 'Campaign validated, but WhatsApp could not be opened. Also update the Formspree endpoint before going live.');
-            }
-          } else if (formspreeOk && whatsappOk) {
-            setMessage('success', 'Campaign validated successfully. Formspree was notified and WhatsApp has been opened.');
-          } else if (formspreeOk) {
-            setMessage('success', 'Campaign validated successfully. Formspree was notified, but WhatsApp could not be opened.');
-          } else if (whatsappOk) {
-            setMessage('success', 'Campaign validated successfully. WhatsApp opened, but Formspree notification may not have completed.');
-          } else {
-            setMessage('error', 'Campaign validated, but both notification channels need attention.');
-          }
-        } catch (formspreeError) {
-          console.error('Formspree Error:', formspreeError);
-
-          try {
-            if (whatsappWindow) {
-              whatsappWindow.location.href = whatsappUrl;
-              whatsappOk = true;
-            } else {
-              window.open(whatsappUrl, '_blank');
-              whatsappOk = true;
-            }
-          } catch (whatsAppError) {
-            console.error('WhatsApp open failed:', whatsAppError);
-          }
-
-          if (whatsappOk) {
-            setMessage('success', 'Campaign validated successfully. WhatsApp opened, but Formspree notification failed.');
-          } else {
-            setMessage('error', 'Campaign validated, but Formspree failed and WhatsApp could not be opened.');
-          }
-        } finally {
-          setSubmittingState(false);
-        }
-      });
-
-      updateBudget();
+      selectedCountries.push(normalized);
       syncTargetCountryValue();
       renderSelectedCountries();
-    })();
-    
-    window.addEventListener('DOMContentLoaded', () => {
-  const preloader = document.getElementById('preloader');
+      targetCountrySelect.value = '';
+    }
 
-  // Show immediately (already visible)
-  preloader.classList.remove('hidden');
+    function clearCountries() {
+      selectedCountries.length = 0;
+      syncTargetCountryValue();
+      renderSelectedCountries();
+      targetCountrySelect.value = '';
+    }
 
-  // Hide after 4 seconds
-  setTimeout(() => {
-    preloader.classList.add('hidden');
-  }, 4000);
-});
-  </script>
+    function updateBudget() {
+      const selected = budgetMap[targetImpressions.value] || budgetMap['100000'];
+      estimatedBudget.value = formatCurrency(selected.amount);
+      budgetTier.textContent = 'Tier: ' + selected.tier;
+    }
+
+    function setMessage(type, text) {
+      message.className = 'message show ' + type;
+      message.textContent = text;
+    }
+
+    function clearMessage() {
+      message.className = 'message';
+      message.textContent = '';
+    }
+
+    function setSubmittingState(isSubmitting) {
+      submitButton.disabled = isSubmitting;
+      submitButton.textContent = isSubmitting ? 'Submitting...' : 'Submit Campaign';
+    }
+
+    function buildEmail(payload, tier) {
+      const subject = encodeURIComponent('New Agent Flow Campaign Intake');
+      const body = encodeURIComponent(
+        `New Campaign Intake Submission\n\n` +
+        `Business Name: ${payload.business_name}\n` +
+        `Destination URL: ${payload.destination_url}\n` +
+        `Owner First Name: ${payload.owner_first_name}\n` +
+        `Owner Last Name: ${payload.owner_last_name}\n` +
+        `Owner Email: ${payload.owner_email}\n` +
+        `Target Impressions: ${payload.target_impressions.toLocaleString()}\n` +
+        `Estimated Budget: ${formatCurrency(payload.estimated_budget)}\n` +
+        `Budget Tier: ${tier}\n` +
+        `Search Engine: ${payload.search_engine}\n` +
+        `Target Country: ${payload.target_country}\n` +
+        `Submitted At: ${payload.submitted_at}`
+      );
+
+      return `mailto:${emailRecipient}?subject=${subject}&body=${body}`;
+    }
+
+    targetImpressions.addEventListener('change', updateBudget);
+
+    destinationUrl.addEventListener('blur', function () {
+      const normalized = normalizeUrl(destinationUrl.value);
+      if (normalized) destinationUrl.value = normalized;
+    });
+
+    targetCountrySelect.addEventListener('change', function () {
+      addCountry(targetCountrySelect.value);
+    });
+
+    clearTargetCountry.addEventListener('click', function () {
+      clearCountries();
+    });
+
+    form.addEventListener('submit', function (event) {
+      event.preventDefault();
+      clearMessage();
+
+      destinationUrl.value = normalizeUrl(destinationUrl.value);
+      syncTargetCountryValue();
+
+      if (!form.checkValidity()) {
+        form.reportValidity();
+        setMessage('error', 'Please complete all required fields.');
+        return;
+      }
+
+      setSubmittingState(true);
+
+      const selected = budgetMap[targetImpressions.value] || budgetMap['100000'];
+
+      const payload = {
+        business_name: form.business_name.value.trim(),
+        destination_url: form.destination_url.value.trim(),
+        owner_first_name: form.owner_first_name.value.trim(),
+        owner_last_name: form.owner_last_name.value.trim(),
+        owner_email: form.owner_email.value.trim(),
+        target_impressions: Number(form.target_impressions.value),
+        estimated_budget: selected.amount,
+        search_engine: form.search_engine.value,
+        target_country: form.target_country.value,
+        submitted_at: new Date().toISOString()
+      };
+
+      const mailtoLink = buildEmail(payload, selected.tier);
+
+      window.location.href = mailtoLink;
+
+      setMessage('success', 'Campaign validated. Email client opened.');
+
+      setSubmittingState(false);
+    });
+
+    updateBudget();
+    syncTargetCountryValue();
+    renderSelectedCountries();
+  })();
+
+  // Splash Control
+  (function () {
+    const splash = document.getElementById('agentFlowSplash');
+    if (!splash) return;
+
+    setTimeout(function () {
+      splash.remove();
+    }, 5000);
+  })();
+</script>
 </body>
 </html>
